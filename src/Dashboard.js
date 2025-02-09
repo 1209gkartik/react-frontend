@@ -1,40 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import TaskForm from './TaskForm';
 import TaskList from './TaskList';
+import useFetchTasks from './useFetchTasks . js';  // Import the custom hook
 
 function Dashboard({ token }) {
-    const [tasks, setTasks] = useState([]);
+    const { tasks, error: fetchError } = useFetchTasks(token);
     const [showTaskForm, setShowTaskForm] = useState(true);
-    const [fetchError, setFetchError] = useState(null);
-
-    const fetchTasks = async () => {
-        try {
-            const response = await fetch('/api/tasks', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-
-            if (!response.ok) {
-                // Handle HTTP errors
-                const errorData = await response.json();
-                console.error('Server error:', errorData);
-                setFetchError(errorData.error || 'Failed to fetch tasks.');
-                return;
-            }
-
-            const result = await response.json();
-            setTasks(result);
-            setFetchError(null); // Clear any previous errors
-        } catch (error) {
-            console.error('Network error:', error);
-            setFetchError('An error occurred while fetching tasks.');
-        }
-    };
-
-    useEffect(() => {
-        fetchTasks();
-    }, [token]);
 
     const toggleView = () => {
         setShowTaskForm(!showTaskForm);
@@ -47,7 +18,7 @@ function Dashboard({ token }) {
                 {showTaskForm ? 'View Tasks' : 'Add Task'}
             </button>
             {showTaskForm ? (
-                <TaskForm token={token} onTaskAdded={fetchTasks} />
+                <TaskForm token={token} />
             ) : (
                 <>
                     {fetchError && <p style={{ color: 'red' }}>{fetchError}</p>}
@@ -59,6 +30,3 @@ function Dashboard({ token }) {
 }
 
 export default Dashboard;
-
-
-

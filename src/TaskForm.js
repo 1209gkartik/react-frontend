@@ -6,9 +6,8 @@ function TaskForm({ token, onTaskAdded }) {
     const [userEstimation, setUserEstimation] = useState('');
     const [error, setError] = useState(null);
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         try {
             const response = await fetch('/api/tasks', {
                 method: 'POST',
@@ -24,56 +23,57 @@ function TaskForm({ token, onTaskAdded }) {
             });
 
             if (!response.ok) {
-                // Handle HTTP errors
                 const errorData = await response.json();
-                console.error('Server error:', errorData);
-                setError(errorData.error || 'Failed to add task');
+                setError(errorData.error || 'Failed to add task.');
                 return;
             }
 
-            const data = await response.json();
-            onTaskAdded(); // Refresh the task list
             setTitle('');
             setDescription('');
             setUserEstimation('');
-            setError(null); // Clear any previous errors
+            setError(null);
+
+            if (onTaskAdded) onTaskAdded();
         } catch (error) {
-            console.error('Network error:', error);
-            setError('An error occurred while adding the task. Please try again.');
+            console.error('Error adding task:', error);
+            setError('An error occurred while adding the task.');
         }
     };
 
     return (
-        <div>
-            <h2>Add a Task</h2>
-            <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
+            <h2>Add Task</h2>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            <div>
+                <label>Title:</label>
                 <input
                     type="text"
-                    placeholder="Task Title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
                 />
+            </div>
+            <div>
+                <label>Description:</label>
                 <textarea
-                    placeholder="Task Description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     required
                 />
+            </div>
+            <div>
+                <label>Estimated Time (hours):</label>
                 <input
                     type="number"
-                    placeholder="Your Estimation (in minutes)"
                     value={userEstimation}
                     onChange={(e) => setUserEstimation(e.target.value)}
                     required
                 />
-                <button type="submit">Add Task</button>
-            </form>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-        </div>
+            </div>
+            <button type="submit">Add Task</button>
+        </form>
     );
 }
 
 export default TaskForm;
-
 

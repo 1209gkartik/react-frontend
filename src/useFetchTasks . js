@@ -1,0 +1,37 @@
+import { useState, useEffect } from 'react';
+
+const useFetchTasks = (token) => {
+    const [tasks, setTasks] = useState([]);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchTasks = async () => {
+            try {
+                const response = await fetch('/api/tasks', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    setError(errorData.error || 'Failed to fetch tasks.');
+                    return;
+                }
+
+                const result = await response.json();
+                setTasks(result);
+                setError(null);
+            } catch (err) {
+                console.error('Error fetching tasks:', err);
+                setError('An error occurred while fetching tasks.');
+            }
+        };
+
+        fetchTasks();
+    }, [token]);
+
+    return { tasks, error };
+};
+
+export default useFetchTasks;
